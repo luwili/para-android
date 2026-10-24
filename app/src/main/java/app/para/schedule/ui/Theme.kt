@@ -8,8 +8,10 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -39,6 +41,8 @@ private val darkColors = darkColorScheme(
 
 @Composable
 fun ParaTheme(profile: GroupProfile, content: @Composable () -> Unit) {
+    // Observe configuration updates as well as dark mode (including a new Monet palette).
+    val configuration = LocalConfiguration.current
     val dark = when (profile.theme) { "dark" -> true; "light" -> false; else -> isSystemInDarkTheme() }
     val activity = LocalContext.current as? ComponentActivity
     DisposableEffect(dark) {
@@ -47,9 +51,12 @@ fun ParaTheme(profile: GroupProfile, content: @Composable () -> Unit) {
         activity?.enableEdgeToEdge(statusBarStyle = style, navigationBarStyle = style)
         onDispose { }
     }
-    val colors = if (profile.dynamicColors && Build.VERSION.SDK_INT >= 31) {
-        if (dark) dynamicDarkColorScheme(LocalContext.current) else dynamicLightColorScheme(LocalContext.current)
-    } else if (dark) darkColors else lightColors
+    val context = LocalContext.current
+    val colors = remember(configuration, dark, profile.dynamicColors, context) {
+        if (profile.dynamicColors && Build.VERSION.SDK_INT >= 31) {
+            if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        } else if (dark) darkColors else lightColors
+    }
     MaterialTheme(
         colorScheme = colors,
         typography = Typography(
@@ -64,6 +71,7 @@ fun ParaTheme(profile: GroupProfile, content: @Composable () -> Unit) {
         ), content = content,
     )
 }
+
 
 @Composable
 fun lessonTint(index: Int): Color = when (index % 4) {

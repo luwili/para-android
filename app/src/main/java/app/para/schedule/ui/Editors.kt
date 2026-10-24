@@ -1,6 +1,5 @@
 package app.para.schedule.ui
 
-import android.app.DatePickerDialog
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -19,6 +18,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -113,7 +114,7 @@ fun LessonEditor(schedule: Schedule, date: LocalDate, initial: Lesson?, onDismis
                             }.onFailure { error = it.message }
                     }
                 }
-            }, enabled = !saving, modifier = Modifier.fillMaxWidth().height(54.dp), shape = RoundedCornerShape(18.dp)) { Text("Сохранить занятие") }
+            }, enabled = !saving, modifier = Modifier.fillMaxWidth().heightIn(min = 54.dp), shape = RoundedCornerShape(18.dp)) { Text("Сохранить занятие") }
             if (initial != null) TextButton(onClick = { deleting = true }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)) {
                 Icon(Icons.Outlined.DeleteOutline, null, Modifier.size(18.dp)); Spacer(Modifier.width(8.dp)); Text("Удалить занятие")
             }
@@ -162,17 +163,16 @@ fun ProfileEditor(initial: GroupProfile, onboarding: Boolean = false, onDismiss:
                     to < from || to > from.plusYears(2) -> error = "Период должен быть от 1 дня до 2 лет"
                     else -> { onSave(initial.copy(name = name.trim(), timezone = timezone.trim(), semesterStart = from, semesterEnd = to)); onDismiss() }
                 }
-            }, modifier = Modifier.fillMaxWidth().height(54.dp), shape = RoundedCornerShape(18.dp)) { Text(if (onboarding) "Создать расписание" else "Сохранить настройки") }
+            }, modifier = Modifier.fillMaxWidth().heightIn(min = 54.dp), shape = RoundedCornerShape(18.dp)) { Text(if (onboarding) "Создать расписание" else "Сохранить настройки") }
         }
     }
 }
 
 @Composable
+@OptIn(ExperimentalMaterial3Api::class)
 fun DateField(label: String, date: LocalDate, onDate: (LocalDate) -> Unit) {
-    val context = LocalContext.current
-    OutlinedCard(onClick = {
-        DatePickerDialog(context, { _, year, month, day -> onDate(LocalDate.of(year, month + 1, day)) }, date.year, date.monthValue - 1, date.dayOfMonth).show()
-    }, shape = RoundedCornerShape(16.dp), modifier = Modifier.fillMaxWidth(), colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+    var showPicker by rememberSaveable { mutableStateOf(false) }
+    OutlinedCard(onClick = { showPicker = true }, shape = RoundedCornerShape(16.dp), modifier = Modifier.fillMaxWidth(), colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surface)) {
         Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 Text(label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -180,6 +180,21 @@ fun DateField(label: String, date: LocalDate, onDate: (LocalDate) -> Unit) {
                 Text(date.format(DateTimeFormatter.ofPattern("d MMMM yyyy", russian)), style = MaterialTheme.typography.bodyLarge)
             }
             Icon(Icons.Outlined.CalendarMonth, null, tint = MaterialTheme.colorScheme.primary)
+        }
+    }
+    if (showPicker) {
+        val compact = LocalConfiguration.current.screenWidthDp < 360 || LocalDensity.current.fontScale > 1.3f
+        val state = rememberDatePickerState(
+            initialSelectedDateMillis = date.atStartOfDay(java.time.ZoneOffset.UTC).toInstant().toEpochMilli(),
+            initialDisplayMode = if (compact) DisplayMode.Input else DisplayMode.Picker,
+        )
+        DatePickerDialog(onDismissRequest = { showPicker = false },
+            confirmButton = { TextButton(onClick = {
+                state.selectedDateMillis?.let { onDate(java.time.Instant.ofEpochMilli(it).atZone(java.time.ZoneOffset.UTC).toLocalDate()) }
+                showPicker = false
+            }, enabled = state.selectedDateMillis != null) { Text("Выбрать") } },
+            dismissButton = { TextButton(onClick = { showPicker = false }) { Text("Отмена") } }) {
+            DatePicker(state, modifier = Modifier.verticalScroll(rememberScrollState()))
         }
     }
 }

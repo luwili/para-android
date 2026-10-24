@@ -24,6 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalDensity
 import app.para.schedule.data.*
 import java.time.LocalDate
 import java.time.ZonedDateTime
@@ -40,10 +41,10 @@ fun BrandHeader(group: String, onGroup: () -> Unit) {
         }
         Spacer(Modifier.width(10.dp))
         Text("пара", fontSize = 25.sp, fontWeight = FontWeight.Bold, letterSpacing = (-1).sp)
-        Spacer(Modifier.weight(1f))
-        Surface(onClick = onGroup, shape = CircleShape, color = MaterialTheme.colorScheme.surfaceVariant) {
+        Spacer(Modifier.width(12.dp))
+        Surface(onClick = onGroup, modifier = Modifier.weight(1f), shape = CircleShape, color = MaterialTheme.colorScheme.surfaceContainerHigh) {
             Row(Modifier.padding(horizontal = 12.dp, vertical = 9.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text(group, style = MaterialTheme.typography.labelMedium, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.widthIn(max = 150.dp))
+                Text(group, style = MaterialTheme.typography.labelMedium, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
                 Icon(Icons.Outlined.ExpandMore, null, Modifier.size(17.dp))
             }
         }
@@ -85,11 +86,14 @@ fun SmallBadge(text: String, active: Boolean = false) {
 }
 
 @Composable
+@OptIn(ExperimentalLayoutApi::class)
 fun LessonCard(lesson: Lesson, index: Int, date: LocalDate, now: ZonedDateTime, onClick: () -> Unit) {
     val current = ScheduleEngine.isCurrent(lesson, date, now)
     val past = date < now.toLocalDate() || (date == now.toLocalDate() && now.toLocalTime() >= lesson.end)
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        Column(Modifier.width(47.dp).padding(top = 15.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+        val stacked = maxWidth < 300.dp || LocalDensity.current.fontScale > 1.3f
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        if (!stacked) Column(Modifier.width(55.dp).padding(top = 15.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Text(lesson.start.format(clockFormat), style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold,
                 color = if (current) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface)
             Text(lesson.end.format(clockFormat), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -100,12 +104,13 @@ fun LessonCard(lesson: Lesson, index: Int, date: LocalDate, now: ZonedDateTime, 
             color = if (current) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
             border = if (current) androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = .45f)) else null) {
             Column(Modifier.padding(17.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (stacked) Text("${lesson.start.format(clockFormat)} — ${lesson.end.format(clockFormat)}", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
+                FlowRow(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Box(Modifier.size(31.dp).clip(RoundedCornerShape(10.dp)).background(lessonTint(lesson.color)), contentAlignment = Alignment.Center) {
                         Icon(if (lesson.kind == "Лекция") Icons.AutoMirrored.Outlined.MenuBook else Icons.Outlined.EditNote, null, Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onSurface)
                     }
                     Text("${index + 1} ПАРА · ${lesson.kind.uppercase(russian)}", style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
+                        color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 2, overflow = TextOverflow.Ellipsis)
                     if (current) SmallBadge("СЕЙЧАС", true)
                     else if (past) Icon(Icons.Outlined.Check, "Завершена", Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
@@ -114,11 +119,12 @@ fun LessonCard(lesson: Lesson, index: Int, date: LocalDate, now: ZonedDateTime, 
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
                         Icon(Icons.Outlined.LocationOn, null, Modifier.size(15.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                         Text(listOf(lesson.room, lesson.teacher).filter { it.isNotBlank() }.joinToString(" · "),
-                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
                     }
                 }
             }
         }
+    }
     }
 }
 

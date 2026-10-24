@@ -1,6 +1,6 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/lesson_root" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="4dp"
-    android:orientation="vertical" android:background="@drawable/widget_item_background" android:padding="7dp">
-    <TextView android:id="@+id/lesson_subject" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="12sp" android:textStyle="bold" android:singleLine="true" android:ellipsize="end" android:textColor="@color/widget_text" />
-    <TextView android:id="@+id/lesson_detail" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="9sp" android:singleLine="true" android:ellipsize="end" android:textColor="@color/widget_secondary" />
+    android:id="@+id/lesson_root" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:layout_marginVertical="3dp"
+    android:orientation="vertical" android:gravity="center_vertical" android:background="@drawable/widget_item_background" android:padding="6dp">
+    <TextView android:id="@+id/lesson_subject" android:layout_width="match_parent" android:layout_height="wrap_content" android:includeFontPadding="false" android:textSize="12sp" android:textStyle="bold" android:singleLine="true" android:ellipsize="end" android:textColor="@color/widget_text" />
+    <TextView android:id="@+id/lesson_detail" android:layout_width="match_parent" android:layout_height="wrap_content" android:includeFontPadding="false" android:textSize="9sp" android:singleLine="true" android:ellipsize="end" android:textColor="@color/widget_secondary" />
 </LinearLayout>

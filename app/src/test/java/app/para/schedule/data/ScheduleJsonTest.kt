@@ -16,6 +16,18 @@ class ScheduleJsonTest {
         assertEquals(schedule, ScheduleJson.decode(ScheduleJson.encode(schedule)))
     }
 
+    @Test fun `new profiles default to Material You`() {
+        assertTrue(GroupProfile().dynamicColors)
+        val root = JSONObject(ScheduleJson.encode(schedule))
+        root.getJSONObject("profile").remove("dynamicColors")
+        assertTrue(ScheduleJson.decode(root.toString()).profile.dynamicColors)
+    }
+
+    @Test fun `explicit custom palette preference survives upgrade`() {
+        val custom = schedule.copy(profile = schedule.profile.copy(dynamicColors = false))
+        assertFalse(ScheduleJson.decode(ScheduleJson.encode(custom)).profile.dynamicColors)
+    }
+
     @Test fun `unknown fields are ignored for forward compatibility`() {
         val root = JSONObject(ScheduleJson.encode(schedule)).put("futureField", "ignored")
         assertEquals(schedule, ScheduleJson.decode(root.toString()))

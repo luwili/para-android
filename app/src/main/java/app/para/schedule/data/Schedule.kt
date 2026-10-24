@@ -33,7 +33,7 @@ data class GroupProfile(
     val semesterStart: LocalDate = monday(LocalDate.now()),
     val semesterEnd: LocalDate = semesterStart.plusMonths(6),
     val theme: String = "system",
-    val dynamicColors: Boolean = false,
+    val dynamicColors: Boolean = true,
 )
 
 data class Schedule(

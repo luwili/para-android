@@ -56,7 +56,7 @@ object ScheduleJson {
             date to lessons
         }
         return Schedule(
-            GroupProfile(name, zone, start, end, theme, p.optBoolean("dynamicColors", false)),
+            GroupProfile(name, zone, start, end, theme, p.optBoolean("dynamicColors", true)),
             templates, overrides, root.optBoolean("configured", true), root.optBoolean("demo", false),
         )
     }

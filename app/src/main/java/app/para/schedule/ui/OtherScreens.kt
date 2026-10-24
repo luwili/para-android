@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.style.TextOverflow
 import app.para.schedule.data.*
 import java.time.format.DateTimeFormatter
 
@@ -25,8 +26,8 @@ fun WelcomeScreen(onCreate: () -> Unit, onDemo: () -> Unit, onImport: () -> Unit
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 28.dp, vertical = 18.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             Icon(Icons.Outlined.CalendarMonth, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(30.dp))
-            Text("пара", style = MaterialTheme.typography.headlineMedium)
-            Spacer(Modifier.weight(1f)); SmallBadge("ДЛЯ СТУДЕНТОВ")
+            Text("пара", style = MaterialTheme.typography.headlineMedium, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+            SmallBadge("ДЛЯ СТУДЕНТОВ")
         }
         OrbitArt(Modifier.fillMaxWidth().height(180.dp))
         Text("Учёба —\nв своём ритме.", style = MaterialTheme.typography.displaySmall)
@@ -38,11 +39,11 @@ fun WelcomeScreen(onCreate: () -> Unit, onDemo: () -> Unit, onImport: () -> Unit
                 FeatureLine(Icons.Outlined.Lock, "Без аккаунта и интернета", "Расписание хранится только на устройстве")
             }
         }
-        Button(onClick = onCreate, modifier = Modifier.fillMaxWidth().height(56.dp), shape = RoundedCornerShape(18.dp)) {
-            Text("Создать своё расписание"); Spacer(Modifier.width(10.dp)); Icon(Icons.AutoMirrored.Outlined.ArrowForward, null, Modifier.size(18.dp))
+        Button(onClick = onCreate, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp), shape = RoundedCornerShape(18.dp)) {
+            Text("Создать своё расписание", modifier = Modifier.weight(1f)); Spacer(Modifier.width(10.dp)); Icon(Icons.AutoMirrored.Outlined.ArrowForward, null, Modifier.size(18.dp))
         }
-        OutlinedButton(onClick = onDemo, modifier = Modifier.fillMaxWidth().height(52.dp), shape = RoundedCornerShape(18.dp)) { Text("Сначала посмотреть пример") }
-        TextButton(onClick = onImport, modifier = Modifier.fillMaxWidth()) { Icon(Icons.Outlined.FileOpen, null, Modifier.size(18.dp)); Spacer(Modifier.width(8.dp)); Text("У меня уже есть JSON-файл") }
+        OutlinedButton(onClick = onDemo, modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp), shape = RoundedCornerShape(18.dp)) { Text("Сначала посмотреть пример") }
+        TextButton(onClick = onImport, modifier = Modifier.fillMaxWidth()) { Icon(Icons.Outlined.FileOpen, null, Modifier.size(18.dp)); Spacer(Modifier.width(8.dp)); Text("У меня уже есть JSON-файл", modifier = Modifier.weight(1f)) }
         Text("Никаких подписок. Просто твой учебный день.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(12.dp))
     }
@@ -57,6 +58,7 @@ private fun FeatureLine(icon: androidx.compose.ui.graphics.vector.ImageVector, t
 }
 
 @Composable
+@OptIn(ExperimentalLayoutApi::class)
 fun WidgetScreen(schedule: Schedule, onPin: () -> Unit, onRefresh: () -> Unit) {
     val now = ScheduleEngine.now(schedule)
     val date = ScheduleEngine.widgetDate(schedule, now)
@@ -86,15 +88,15 @@ fun WidgetScreen(schedule: Schedule, onPin: () -> Unit, onRefresh: () -> Unit) {
                 }
             }
         }
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            listOf("2 × 2 · строки", "4 × 2 · колонки", "4 × 4 · список").forEach { label ->
-                Surface(shape = RoundedCornerShape(12.dp), color = MaterialTheme.colorScheme.surfaceVariant, modifier = Modifier.weight(1f)) {
+        FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            listOf("2 × 2 · строки", "4 × 2 · колонки", "4 × 4 · карточки").forEach { label ->
+                Surface(shape = RoundedCornerShape(12.dp), color = MaterialTheme.colorScheme.surfaceContainerHigh) {
                     Text(label, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(10.dp))
                 }
             }
         }
-        Button(onClick = onPin, modifier = Modifier.fillMaxWidth().height(56.dp), shape = RoundedCornerShape(18.dp)) {
-            Icon(Icons.AutoMirrored.Outlined.AddToHomeScreen, null, Modifier.size(20.dp)); Spacer(Modifier.width(8.dp)); Text("Добавить виджет")
+        Button(onClick = onPin, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp), shape = RoundedCornerShape(18.dp)) {
+            Icon(Icons.AutoMirrored.Outlined.AddToHomeScreen, null, Modifier.size(20.dp)); Spacer(Modifier.width(8.dp)); Text("Добавить виджет", modifier = Modifier.weight(1f))
         }
         InfoCard(Icons.Outlined.Tune, "Подстраивается под тебя", "Удерживай виджет на рабочем столе и измени размер. На Android 12+ цвета берутся из системной палитры; на более ранних версиях — светлая или тёмная палитра Пары.")
         InfoCard(Icons.Outlined.Schedule, "Обновления без лишнего расхода", "После правок виджет обновляется сразу. В фоне — примерно раз в 15–30 минут: Android может задерживать обновления в режиме экономии. Для точного статуса сейчас нажми ↻.") {
@@ -105,6 +107,7 @@ fun WidgetScreen(schedule: Schedule, onPin: () -> Unit, onRefresh: () -> Unit) {
 }
 
 @Composable
+@OptIn(ExperimentalLayoutApi::class)
 fun SettingsScreen(schedule: Schedule, onProfile: () -> Unit, onTheme: (String) -> Unit,
     onDynamic: (Boolean) -> Unit, onImport: () -> Unit, onExport: () -> Unit, onReset: () -> Unit) {
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp, 8.dp, 24.dp, 30.dp), verticalArrangement = Arrangement.spacedBy(22.dp)) {
@@ -132,7 +135,7 @@ fun SettingsScreen(schedule: Schedule, onProfile: () -> Unit, onTheme: (String) 
             }
         }
         InfoCard(Icons.Outlined.SwapHoriz, "Одно расписание на всю группу", "Заполни расписание один раз и сохрани JSON. Одногруппники смогут открыть тот же файл в Паре. Это обмен копиями, не облачная синхронизация.") {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedButton(onClick = onImport) { Icon(Icons.Outlined.FileOpen, null, Modifier.size(16.dp)); Spacer(Modifier.width(6.dp)); Text("Импорт") }
                 Button(onClick = onExport) { Icon(Icons.Outlined.SaveAlt, null, Modifier.size(16.dp)); Spacer(Modifier.width(6.dp)); Text("Экспорт") }
             }

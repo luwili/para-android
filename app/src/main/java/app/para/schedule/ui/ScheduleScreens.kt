@@ -2,6 +2,8 @@ package app.para.schedule.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -19,6 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalDensity
 import app.para.schedule.data.*
 import java.time.LocalDate
 import java.time.YearMonth
@@ -37,7 +40,7 @@ fun ScheduleScreen(
     LazyColumn(contentPadding = PaddingValues(start = 24.dp, end = 24.dp, top = 8.dp, bottom = 100.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         item {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Column {
+                Column(Modifier.weight(1f)) {
                     Text("УЧЁБА В ТВОЁМ РИТМЕ", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
                     Spacer(Modifier.height(10.dp))
                     Text("Всё по плану.", style = MaterialTheme.typography.headlineLarge)
@@ -91,9 +94,10 @@ private fun DayHero(schedule: Schedule, date: LocalDate, now: ZonedDateTime, les
     val current = lessons.firstOrNull { ScheduleEngine.isCurrent(it, date, now) }
     val next = if (today) lessons.firstOrNull { it.start > now.toLocalTime() } else null
     Surface(shape = RoundedCornerShape(28.dp), color = MaterialTheme.colorScheme.primaryContainer) {
-        Box(Modifier.fillMaxWidth().heightIn(min = 125.dp)) {
-            OrbitArt(Modifier.align(Alignment.CenterEnd).size(112.dp))
-            Column(Modifier.padding(18.dp).fillMaxWidth(.72f), verticalArrangement = Arrangement.spacedBy(7.dp)) {
+        BoxWithConstraints(Modifier.fillMaxWidth().heightIn(min = 125.dp)) {
+            val art = maxWidth >= 360.dp && LocalDensity.current.fontScale <= 1.2f
+            if (art) OrbitArt(Modifier.align(Alignment.CenterEnd).size(112.dp))
+            Column(Modifier.padding(start = 18.dp, top = 18.dp, bottom = 18.dp, end = if (art) 124.dp else 18.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(7.dp)) {
                 Text(date.format(DateTimeFormatter.ofPattern("EEEE, d MMMM", russian)).replaceFirstChar { it.titlecase(russian) },
                     style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onPrimaryContainer)
                 Text(when {
@@ -118,21 +122,30 @@ private fun pairWord(number: Int) = if (number % 100 in 11..14) "пар" else wh
 
 @Composable
 private fun WeekStrip(schedule: Schedule, week: LocalDate, selected: LocalDate, today: LocalDate, onDate: (LocalDate) -> Unit) {
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+    val density = LocalDensity.current
+    val cellWidth = maxOf(40.dp, (32 * density.fontScale).dp, (maxWidth - 30.dp) / 7)
+    val scroll = rememberScrollState()
+    LaunchedEffect(selected, cellWidth, maxWidth) {
+        val offset = with(density) { ((cellWidth + 5.dp) * (selected.dayOfWeek.value - 1) - (maxWidth - cellWidth) / 2).roundToPx() }
+        scroll.animateScrollTo(offset.coerceAtLeast(0))
+    }
+    Row(Modifier.fillMaxWidth().horizontalScroll(scroll), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
         val labels = listOf("ПН", "ВТ", "СР", "ЧТ", "ПТ", "СБ", "ВС")
         repeat(7) { index ->
             val date = week.plusDays(index.toLong())
             val active = selected == date
             val foreground = if (active) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
-            Column(Modifier.weight(1f).clip(RoundedCornerShape(18.dp))
+            Column(Modifier.width(cellWidth).clip(RoundedCornerShape(18.dp))
                 .background(if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface)
                 .clickable { onDate(date) }.padding(vertical = 10.dp),
                 horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                Text(labels[index], style = MaterialTheme.typography.labelSmall, color = foreground.copy(alpha = .7f))
-                Text(date.dayOfMonth.toString(), fontWeight = FontWeight.SemiBold, fontSize = 18.sp, color = foreground)
+                Text(labels[index], style = MaterialTheme.typography.labelSmall, color = foreground.copy(alpha = .7f), maxLines = 1)
+                Text(date.dayOfMonth.toString(), fontWeight = FontWeight.SemiBold, fontSize = 18.sp, color = foreground, maxLines = 1)
                 Box(Modifier.size(4.dp).background(if (date == today || ScheduleEngine.lessonsOn(schedule, date).isNotEmpty()) foreground else androidx.compose.ui.graphics.Color.Transparent, CircleShape))
             }
         }
+    }
     }
 }
 
@@ -171,6 +184,10 @@ fun MonthScreen(schedule: Schedule, date: LocalDate, now: ZonedDateTime, onDate:
                             style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
                         IconButton(onClick = { monthString = month.plusMonths(1).toString() }) { Icon(Icons.Outlined.ChevronRight, "Следующий месяц") }
                     }
+                    BoxWithConstraints(Modifier.fillMaxWidth()) {
+                    val gridWidth = maxOf(maxWidth, (7 * maxOf(36f, 28 * LocalDensity.current.fontScale)).dp)
+                    Column(Modifier.horizontalScroll(rememberScrollState())) {
+                    Column(Modifier.width(gridWidth), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Row {
                         listOf("ПН", "ВТ", "СР", "ЧТ", "ПТ", "СБ", "ВС").forEach {
                             Box(Modifier.weight(1f), contentAlignment = Alignment.Center) { Text(it, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
@@ -199,6 +216,9 @@ fun MonthScreen(schedule: Schedule, date: LocalDate, now: ZonedDateTime, onDate:
                                 }
                             }
                         }
+                    }
+                    }
+                    }
                     }
                     Text("Точки — учебные дни. Нажми на дату, чтобы изменить её.", style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(6.dp))

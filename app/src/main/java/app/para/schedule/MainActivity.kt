@@ -18,6 +18,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -73,17 +75,22 @@ fun ParaApp(initialDate: LocalDate? = null, model: ParaViewModel = viewModel()) 
     val onAdd = { editingLesson = null; lessonEditor = true }
     val onEdit: (Lesson) -> Unit = { editingLesson = it; lessonEditor = true }
     ParaTheme(schedule.profile) {
+        BoxWithConstraints(Modifier.fillMaxSize()) {
+        val wide = maxWidth >= 720.dp
+        val fullNavLabels = maxWidth >= 360.dp && LocalDensity.current.fontScale <= 1.3f
         Scaffold(containerColor = MaterialTheme.colorScheme.background,
             snackbarHost = { SnackbarHost(snackbars) },
             topBar = {
-                if (state.ready && schedule.configured) Column(Modifier.statusBarsPadding()) {
+                if (state.ready && schedule.configured) Column(Modifier.fillMaxWidth().statusBarsPadding(), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Box(Modifier.widthIn(max = 960.dp)) {
                     BrandHeader(schedule.profile.name) { profileEditor = true }
+                    }
                 }
             },
             bottomBar = {
-                if (state.ready && schedule.configured) NavigationBar(containerColor = MaterialTheme.colorScheme.surface, tonalElevation = 0.dp) {
+                if (state.ready && schedule.configured && !wide) NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceContainerLow, tonalElevation = 0.dp) {
                     Page.entries.forEach { page -> NavigationBarItem(selected = pageName == page.name, onClick = { pageName = page.name },
-                        icon = { Icon(page.icon, null) }, label = { Text(page.label) },
+                        icon = { Icon(page.icon, page.label) }, label = { Text(page.label, maxLines = 1, overflow = TextOverflow.Ellipsis) }, alwaysShowLabel = fullNavLabels,
                         colors = NavigationBarItemDefaults.colors(indicatorColor = MaterialTheme.colorScheme.primaryContainer)) }
                 }
             },
@@ -94,7 +101,13 @@ fun ParaApp(initialDate: LocalDate? = null, model: ParaViewModel = viewModel()) 
                     }
                 }
             }) { padding ->
-            Box(Modifier.fillMaxSize().padding(padding)) {
+            Row(Modifier.fillMaxSize().padding(padding)) {
+                if (wide && state.ready && schedule.configured) NavigationRail(containerColor = MaterialTheme.colorScheme.surfaceContainerLow) {
+                    Page.entries.forEach { page -> NavigationRailItem(selected = pageName == page.name, onClick = { pageName = page.name },
+                        icon = { Icon(page.icon, page.label) }, label = { Text(page.label, maxLines = 1) }) }
+                }
+                Box(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.TopCenter) {
+                Box(Modifier.widthIn(max = 960.dp).fillMaxSize()) {
                 when {
                     !state.ready -> CircularProgressIndicator(Modifier.align(Alignment.Center))
                     !schedule.configured -> WelcomeScreen(onCreate = { profileEditor = true }, onDemo = { model.update("Открыт демонстрационный пример") { ScheduleEngine.example() } }, onImport = onImport)
@@ -120,6 +133,9 @@ fun ParaApp(initialDate: LocalDate? = null, model: ParaViewModel = viewModel()) 
                     }
                 }
             }
+            }
+            }
+        }
         }
         if (profileEditor) ProfileEditor(schedule.profile, onboarding = !schedule.configured,
             onDismiss = { profileEditor = false }, onSave = { profile -> model.update("Группа настроена") { it.copy(profile = profile, configured = true) } })
