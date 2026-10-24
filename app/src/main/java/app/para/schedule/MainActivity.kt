@@ -43,7 +43,7 @@ class MainActivity : ComponentActivity() {
 
 private enum class Page(val label: String, val icon: ImageVector) {
     DAY("Расписание", Icons.Outlined.ViewAgenda), MONTH("Месяц", Icons.Outlined.CalendarMonth),
-    WIDGET("Виджет", Icons.Outlined.Widgets), SETTINGS("Настройки", Icons.Outlined.Tune),
+    WIDGET("Виджет", Icons.Outlined.Widgets), IMPORT("Импорт", Icons.Outlined.AutoAwesome), SETTINGS("Настройки", Icons.Outlined.Tune),
 }
 
 @Composable
@@ -110,7 +110,8 @@ fun ParaApp(initialDate: LocalDate? = null, model: ParaViewModel = viewModel()) 
                 Box(Modifier.widthIn(max = 960.dp).fillMaxSize()) {
                 when {
                     !state.ready -> CircularProgressIndicator(Modifier.align(Alignment.Center))
-                    !schedule.configured -> WelcomeScreen(onCreate = { profileEditor = true }, onDemo = { model.update("Открыт демонстрационный пример") { ScheduleEngine.example() } }, onImport = onImport)
+                    !schedule.configured && pageName != Page.IMPORT.name -> WelcomeScreen(onCreate = { profileEditor = true }, onDemo = { model.update("Открыт демонстрационный пример") { ScheduleEngine.example() } }, onImport = onImport,
+                        onAiImport = { pageName = Page.IMPORT.name })
                     else -> when (Page.valueOf(pageName)) {
                         Page.DAY -> ScheduleScreen(schedule, date, now, { selectedDate = it.toString() }, onAdd, onEdit,
                             { confirm = "dayOff" }, { confirm = "restore" })
@@ -129,7 +130,8 @@ fun ParaApp(initialDate: LocalDate? = null, model: ParaViewModel = viewModel()) 
                         Page.SETTINGS -> SettingsScreen(schedule, { profileEditor = true },
                             { theme -> model.update { it.copy(profile = it.profile.copy(theme = theme)) } },
                             { dynamic -> model.update { it.copy(profile = it.profile.copy(dynamicColors = dynamic)) } },
-                            onImport, { exporter.launch("para-${schedule.profile.name.replace(Regex("[^\\p{L}\\p{N}_-]"), "_")}.json") }, { confirm = "reset" })
+                            onImport, { exporter.launch("para-${schedule.profile.name.replace(Regex("[^\\p{L}\\p{N}_-]"), "_")}.json") }, { confirm = "reset" }, { pageName = Page.IMPORT.name })
+                        Page.IMPORT -> AiImportScreen(onBack = { pageName = Page.DAY.name }, onApplied = { pageName = Page.DAY.name })
                     }
                 }
             }

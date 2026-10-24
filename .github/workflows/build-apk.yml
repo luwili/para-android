@@ -28,7 +28,7 @@ jobs:
           java-version: '17'
       - uses: android-actions/setup-android@v3
         with:
-          packages: 'platform-tools platforms;android-35 build-tools;34.0.0'
+          packages: 'platform-tools platforms;android-35 build-tools;34.0.0 cmake;3.22.1 ndk;27.2.12479018'
       - uses: gradle/actions/setup-gradle@v4
       - name: Tests, lint and debug APK
         run: ./gradlew testDebugUnitTest lintDebug assembleDebug --no-daemon
@@ -57,7 +57,7 @@ jobs:
           java-version: '17'
       - uses: android-actions/setup-android@v3
         with:
-          packages: 'platform-tools platforms;android-35 build-tools;34.0.0'
+          packages: 'platform-tools platforms;android-35 build-tools;34.0.0 cmake;3.22.1 ndk;27.2.12479018'
       - uses: gradle/actions/setup-gradle@v4
       - name: Restore private signing key
         env:
@@ -71,7 +71,7 @@ jobs:
           PARA_KEYSTORE_FILE: ${{ runner.temp }}/para-release.jks
           PARA_KEYSTORE_PASSWORD: ${{ secrets.PARA_KEYSTORE_PASSWORD }}
           PARA_VERSION_CODE: ${{ github.run_number }}
-          PARA_VERSION_NAME: 0.1.${{ github.run_number }}
+          PARA_VERSION_NAME: 0.2.${{ github.run_number }}
         run: |
           ./gradlew assembleRelease --no-daemon
           cp app/build/outputs/apk/release/app-release.apk Para.apk
@@ -79,14 +79,15 @@ jobs:
       - name: Publish downloadable APK
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v0.1.${{ github.run_number }}
-          name: Пара · 0.1.${{ github.run_number }}
+          tag_name: v0.2.${{ github.run_number }}
+          name: Пара · 0.2.${{ github.run_number }}
           make_latest: true
           body: |
             Ранняя тестовая версия приложения «Пара» для Android 8.0+.
-            Расписание на неделю и месяц, редактор, обмен JSON и адаптивный виджет.
+            Локальный AI-импорт фото, текста и документов, подбор и ручной выбор модели, проверка черновика и распределение по неделям.
+            AI-пакеты скачиваются отдельно; источник не отправляется в облако. Первое распознавание потребует загрузки выбранной модели/OCR.
             Скачайте Para.apk ниже. APK подписан постоянным ключом проекта.
-            Импорт фото/PDF и автоматическое распознавание пока не реализованы.
+            ИИ может ошибаться: перед сохранением обязательна проверка дат, времени и полноты.
           files: |
             Para.apk
             Para.apk.sha256

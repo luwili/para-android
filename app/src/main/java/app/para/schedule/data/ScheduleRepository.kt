@@ -19,6 +19,7 @@ class ScheduleRepository private constructor(private val context: Context) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val mutex = Mutex()
     private val file = AtomicFile(File(context.filesDir, "schedule.json"))
+    private val importBackup = AtomicFile(File(context.filesDir, "last-ai-import-backup.json"))
     private val mutableState = MutableStateFlow(StoreState())
     val state = mutableState.asStateFlow()
 
@@ -41,12 +42,26 @@ class ScheduleRepository private constructor(private val context: Context) {
         }
     }
 
-    suspend fun update(transform: (Schedule) -> Schedule): Result<Unit> = mutex.withLock {
+    suspend fun update(transform: (Schedule) -> Schedule): Result<Unit> = write(false, transform)
+    suspend fun applyImport(transform: (Schedule) -> Schedule): Result<Unit> = write(true, transform)
+    fun hasImportBackup() = importBackup.baseFile.exists() || File(importBackup.baseFile.path + ".bak").exists()
+    fun readImportBackup(): Schedule = synchronized(storageLock) {
+        ScheduleJson.decode(importBackup.openRead().bufferedReader().use { it.readText() })
+    }
+
+    private suspend fun write(backup: Boolean, transform: (Schedule) -> Schedule): Result<Unit> = mutex.withLock {
         runCatching {
             val next = transform(mutableState.value.schedule)
             val text = ScheduleJson.encode(next)
             ScheduleJson.decode(text) // The same constraints apply to the editor and file import.
             synchronized(storageLock) {
+                if (backup) {
+                    val saved = importBackup.startWrite()
+                    try {
+                        saved.write(ScheduleJson.encode(mutableState.value.schedule).toByteArray(Charsets.UTF_8))
+                        importBackup.finishWrite(saved)
+                    } catch (e: Exception) { importBackup.failWrite(saved); throw e }
+                }
                 val output = file.startWrite()
                 try {
                     output.write(text.toByteArray(Charsets.UTF_8))

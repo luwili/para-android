@@ -9,3 +9,5 @@ local.properties
 dist/
 .tools/
 signing.properties
+**/.cxx/
+**/.externalNativeBuild/

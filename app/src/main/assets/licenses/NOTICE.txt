@@ -1,0 +1,28 @@
+Пара — сторонние компоненты локального распознавания
+
+llama.cpp / ggml, Copyright (c) 2023-2026 The ggml authors — MIT.
+Source: https://github.com/ggml-org/llama.cpp/tree/620d2225cc436ab0b001e3200e590e3b286ef9ab
+Полный текст: llama-MIT.txt.
+
+Tesseract4Android 4.9.0, Copyright 2019 Adaptech s.r.o., Robert Pösel — Apache License 2.0.
+Source: https://github.com/adaptech-cz/Tesseract4Android
+Tesseract OCR 5.5.1 and tessdata_fast Russian/English — Apache License 2.0.
+Sources: https://github.com/tesseract-ocr/tesseract and https://github.com/tesseract-ocr/tessdata_fast
+Полный текст: Apache-2.0.txt.
+
+Tesseract4Android also contains Leptonica 1.85.0, libpng 1.6.48 and IJG libjpeg 9f.
+Their copyright and license texts are included in Leptonica.txt, libpng.txt and libjpeg-README.txt.
+
+Optional model downloads (not embedded in the APK):
+Qwen3 0.6B / 1.7B / 4B, Qwen team / Alibaba Cloud — Apache License 2.0.
+Sources: https://huggingface.co/Qwen/Qwen3-0.6B, https://huggingface.co/Qwen/Qwen3-1.7B, https://huggingface.co/Qwen/Qwen3-4B
+0.6B and 1.7B GGUF Q4_K_M quantizations provided by bartowski:
+https://huggingface.co/bartowski/Qwen_Qwen3-0.6B-GGUF
+https://huggingface.co/bartowski/Qwen_Qwen3-1.7B-GGUF
+4B GGUF provided by Qwen: https://huggingface.co/Qwen/Qwen3-4B-GGUF
+Exact revisions, file sizes and SHA-256 values are pinned in ModelCatalog.kt.
+
+AndroidX / Jetpack Compose / WorkManager — Android Open Source Project, Apache License 2.0.
+Kotlin / kotlinx.coroutines — JetBrains and contributors, Apache License 2.0.
+
+These licenses apply to the listed third-party components, not to user schedules or source documents.

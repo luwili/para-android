@@ -22,7 +22,7 @@ import app.para.schedule.data.*
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun WelcomeScreen(onCreate: () -> Unit, onDemo: () -> Unit, onImport: () -> Unit) {
+fun WelcomeScreen(onCreate: () -> Unit, onDemo: () -> Unit, onImport: () -> Unit, onAiImport: () -> Unit) {
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 28.dp, vertical = 18.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             Icon(Icons.Outlined.CalendarMonth, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(30.dp))
@@ -36,12 +36,13 @@ fun WelcomeScreen(onCreate: () -> Unit, onDemo: () -> Unit, onImport: () -> Unit
             Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(17.dp)) {
                 FeatureLine(Icons.Outlined.DateRange, "Неделя и месяц", "Шаблоны, чётность и изменения по датам")
                 FeatureLine(Icons.Outlined.Widgets, "Виджет под твой экран", "От компактной строки до полного списка")
-                FeatureLine(Icons.Outlined.Lock, "Без аккаунта и интернета", "Расписание хранится только на устройстве")
+                FeatureLine(Icons.Outlined.Lock, "Приватно и локально", "Расписание на устройстве; AI-пакеты загружаются отдельно")
             }
         }
         Button(onClick = onCreate, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp), shape = RoundedCornerShape(18.dp)) {
             Text("Создать своё расписание", modifier = Modifier.weight(1f)); Spacer(Modifier.width(10.dp)); Icon(Icons.AutoMirrored.Outlined.ArrowForward, null, Modifier.size(18.dp))
         }
+        FilledTonalButton(onClick = onAiImport, modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp), shape = RoundedCornerShape(18.dp)) { Text("Распознать фото, текст или документ") }
         OutlinedButton(onClick = onDemo, modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp), shape = RoundedCornerShape(18.dp)) { Text("Сначала посмотреть пример") }
         TextButton(onClick = onImport, modifier = Modifier.fillMaxWidth()) { Icon(Icons.Outlined.FileOpen, null, Modifier.size(18.dp)); Spacer(Modifier.width(8.dp)); Text("У меня уже есть JSON-файл", modifier = Modifier.weight(1f)) }
         Text("Никаких подписок. Просто твой учебный день.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -109,7 +110,7 @@ fun WidgetScreen(schedule: Schedule, onPin: () -> Unit, onRefresh: () -> Unit) {
 @Composable
 @OptIn(ExperimentalLayoutApi::class)
 fun SettingsScreen(schedule: Schedule, onProfile: () -> Unit, onTheme: (String) -> Unit,
-    onDynamic: (Boolean) -> Unit, onImport: () -> Unit, onExport: () -> Unit, onReset: () -> Unit) {
+    onDynamic: (Boolean) -> Unit, onImport: () -> Unit, onExport: () -> Unit, onReset: () -> Unit, onAiImport: () -> Unit) {
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp, 8.dp, 24.dp, 30.dp), verticalArrangement = Arrangement.spacedBy(22.dp)) {
         Text("ВСЁ НА СВОИХ МЕСТАХ", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
         Text("Твоё пространство", style = MaterialTheme.typography.headlineLarge)
@@ -140,7 +141,9 @@ fun SettingsScreen(schedule: Schedule, onProfile: () -> Unit, onTheme: (String) 
                 Button(onClick = onExport) { Icon(Icons.Outlined.SaveAlt, null, Modifier.size(16.dp)); Spacer(Modifier.width(6.dp)); Text("Экспорт") }
             }
         }
-        InfoCard(Icons.Outlined.AutoAwesome, "А если просто прислать фото?", "Распознавание фото, PDF, таблиц и текста — следующий этап. Сейчас работает ручной редактор и JSON. Перед любым будущим автоимпортом можно будет проверить даты и пары: ИИ не должен молча менять расписание.")
+        InfoCard(Icons.Outlined.AutoAwesome, "Фото, текст или документ", "Локальная модель собирает черновик, а календарь распределяет пары по выбранным неделям. Модель подбирается по устройству; можно выбрать вручную. Сеть нужна только для загрузки пакетов, документы на сервер не отправляются.") {
+            Button(onClick = onAiImport) { Text("Распознать расписание") }
+        }
         if (schedule.demo) InfoCard(Icons.Outlined.Science, "Сейчас открыт пример", "Это демонстрационные занятия ПОНБ-УП-304С, а не данные университета. Можно удалить пример и создать своё расписание.") {
             TextButton(onClick = onReset) { Text("Начать с чистого листа") }
         } else TextButton(onClick = onReset, colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)) {
