@@ -12,6 +12,8 @@
   <img src="docs/screenshots/month.png" width="230" alt="Календарь месяца" />
 </p>
 
+[Виджет и приложение при крупном шрифте](docs/screenshots/adaptive/overview.png) · [Широкое окно / боковая навигация](docs/screenshots/adaptive/wide.png)
+
 ## Уже работает
 
 - Интерфейс на Jetpack Compose: светлая/тёмная тема, Material You (по умолчанию на Android 12+ для новых профилей) и отдельная лавандовая палитра по выбору.
