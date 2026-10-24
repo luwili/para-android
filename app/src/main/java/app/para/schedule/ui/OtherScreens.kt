@@ -32,7 +32,7 @@ fun WelcomeScreen(onCreate: () -> Unit, onDemo: () -> Unit, onImport: () -> Unit
         OrbitArt(Modifier.fillMaxWidth().height(180.dp))
         Text("Учёба —\nв своём ритме.", style = MaterialTheme.typography.displaySmall)
         Text("Твоя группа. Твоё расписание.\nВсе пары и свободные дни — в одном спокойном месте.", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Surface(shape = RoundedCornerShape(24.dp), color = MaterialTheme.colorScheme.surface) {
+        Surface(shape = RoundedCornerShape(24.dp), color = MaterialTheme.colorScheme.surfaceContainer) {
             Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(17.dp)) {
                 FeatureLine(Icons.Outlined.DateRange, "Неделя и месяц", "Шаблоны, чётность и изменения по датам")
                 FeatureLine(Icons.Outlined.Widgets, "Виджет под твой экран", "От компактной строки до полного списка")
@@ -117,7 +117,7 @@ fun SettingsScreen(schedule: Schedule, onProfile: () -> Unit, onTheme: (String) 
             "${schedule.profile.timezone}\n${schedule.profile.semesterStart.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))} — ${schedule.profile.semesterEnd.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))}") {
             TextButton(onClick = onProfile) { Text("Изменить группу и период") }
         }
-        Surface(shape = RoundedCornerShape(24.dp), color = MaterialTheme.colorScheme.surface) {
+        Surface(shape = RoundedCornerShape(24.dp), color = MaterialTheme.colorScheme.surfaceContainer) {
             Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text("Внешний вид", style = MaterialTheme.typography.titleMedium)
                 Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {

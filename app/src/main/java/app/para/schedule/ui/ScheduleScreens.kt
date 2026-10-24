@@ -45,7 +45,7 @@ fun ScheduleScreen(
                     Spacer(Modifier.height(10.dp))
                     Text("Всё по плану.", style = MaterialTheme.typography.headlineLarge)
                 }
-                IconButton(onClick = { onDate(now.toLocalDate()) }, modifier = Modifier.clip(CircleShape).background(MaterialTheme.colorScheme.surface)) {
+                IconButton(onClick = { onDate(now.toLocalDate()) }, modifier = Modifier.clip(CircleShape).background(MaterialTheme.colorScheme.surfaceContainer)) {
                     Icon(Icons.Outlined.Today, "Перейти к сегодня")
                 }
             }
@@ -137,7 +137,7 @@ private fun WeekStrip(schedule: Schedule, week: LocalDate, selected: LocalDate, 
             val active = selected == date
             val foreground = if (active) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
             Column(Modifier.width(cellWidth).clip(RoundedCornerShape(18.dp))
-                .background(if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface)
+                .background(if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainer)
                 .clickable { onDate(date) }.padding(vertical = 10.dp),
                 horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(5.dp)) {
                 Text(labels[index], style = MaterialTheme.typography.labelSmall, color = foreground.copy(alpha = .7f), maxLines = 1)
@@ -176,7 +176,7 @@ fun MonthScreen(schedule: Schedule, date: LocalDate, now: ZonedDateTime, onDate:
             Text("Месяц в фокусе", style = MaterialTheme.typography.headlineLarge)
         }
         item {
-            Surface(shape = RoundedCornerShape(26.dp), color = MaterialTheme.colorScheme.surface) {
+            Surface(shape = RoundedCornerShape(26.dp), color = MaterialTheme.colorScheme.surfaceContainer) {
                 Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         IconButton(onClick = { monthString = month.minusMonths(1).toString() }) { Icon(Icons.Outlined.ChevronLeft, "Предыдущий месяц") }

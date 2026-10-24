@@ -101,7 +101,7 @@ fun LessonCard(lesson: Lesson, index: Int, date: LocalDate, now: ZonedDateTime, 
             Box(Modifier.width(2.dp).height(26.dp).background(MaterialTheme.colorScheme.outlineVariant, CircleShape))
         }
         Surface(onClick = onClick, modifier = Modifier.weight(1f), shape = RoundedCornerShape(23.dp),
-            color = if (current) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
+            color = if (current) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainer,
             border = if (current) androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = .45f)) else null) {
             Column(Modifier.padding(17.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 if (stacked) Text("${lesson.start.format(clockFormat)} — ${lesson.end.format(clockFormat)}", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
@@ -130,7 +130,7 @@ fun LessonCard(lesson: Lesson, index: Int, date: LocalDate, now: ZonedDateTime, 
 
 @Composable
 fun EmptyDay(onAdd: () -> Unit, outsidePeriod: Boolean = false) {
-    Surface(shape = RoundedCornerShape(26.dp), color = MaterialTheme.colorScheme.surface, modifier = Modifier.fillMaxWidth()) {
+    Surface(shape = RoundedCornerShape(26.dp), color = MaterialTheme.colorScheme.surfaceContainer, modifier = Modifier.fillMaxWidth()) {
         Column(Modifier.padding(27.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Icon(Icons.Outlined.WbSunny, null, Modifier.size(40.dp), tint = MaterialTheme.colorScheme.tertiary)
             Text(if (outsidePeriod) "Вне учебного периода" else "Можно выдохнуть", style = MaterialTheme.typography.titleLarge)
@@ -143,7 +143,7 @@ fun EmptyDay(onAdd: () -> Unit, outsidePeriod: Boolean = false) {
 
 @Composable
 fun InfoCard(icon: ImageVector, title: String, description: String, modifier: Modifier = Modifier, action: (@Composable () -> Unit)? = null) {
-    Surface(shape = RoundedCornerShape(24.dp), color = MaterialTheme.colorScheme.surface, modifier = modifier.fillMaxWidth()) {
+    Surface(shape = RoundedCornerShape(24.dp), color = MaterialTheme.colorScheme.surfaceContainer, modifier = modifier.fillMaxWidth()) {
         Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Icon(icon, null, tint = MaterialTheme.colorScheme.primary)
             Text(title, style = MaterialTheme.typography.titleMedium)
