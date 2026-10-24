@@ -1,0 +1,91 @@
+name: Android · checks and APK
+
+on:
+  push:
+    branches: [main]
+    paths: ['app/**', 'gradle/**', '*.gradle.kts', 'gradle.properties', 'gradlew*', '.github/workflows/build-apk.yml']
+  pull_request:
+    paths: ['app/**', 'gradle/**', '*.gradle.kts', 'gradle.properties', 'gradlew*', '.github/workflows/build-apk.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Tests, lint and debug APK
+        run: ./gradlew testDebugUnitTest lintDebug assembleDebug --no-daemon
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: android-checks
+          path: |
+            app/build/reports/
+            app/build/outputs/apk/debug/*.apk
+          retention-days: 14
+
+  release:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: checks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Restore private signing key
+        env:
+          KEYSTORE: ${{ secrets.PARA_KEYSTORE_BASE64 }}
+        run: |
+          test -n "$KEYSTORE" || { echo 'Set PARA_KEYSTORE_BASE64 and PARA_KEYSTORE_PASSWORD repository secrets.'; exit 1; }
+          printf '%s' "$KEYSTORE" | base64 --decode > "$RUNNER_TEMP/para-release.jks"
+          chmod 600 "$RUNNER_TEMP/para-release.jks"
+      - name: Build signed APK
+        env:
+          PARA_KEYSTORE_FILE: ${{ runner.temp }}/para-release.jks
+          PARA_KEYSTORE_PASSWORD: ${{ secrets.PARA_KEYSTORE_PASSWORD }}
+          PARA_VERSION_CODE: ${{ github.run_number }}
+          PARA_VERSION_NAME: 0.1.${{ github.run_number }}
+        run: |
+          ./gradlew assembleRelease --no-daemon
+          cp app/build/outputs/apk/release/app-release.apk Para.apk
+          sha256sum Para.apk > Para.apk.sha256
+      - name: Publish downloadable APK
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v0.1.${{ github.run_number }}
+          name: Пара · 0.1.${{ github.run_number }}
+          make_latest: true
+          body: |
+            Ранняя тестовая версия приложения «Пара» для Android 8.0+.
+            Расписание на неделю и месяц, редактор, обмен JSON и адаптивный виджет.
+            Скачайте Para.apk ниже. APK подписан постоянным ключом проекта.
+            Импорт фото/PDF и автоматическое распознавание пока не реализованы.
+          files: |
+            Para.apk
+            Para.apk.sha256
+      - name: Remove temporary key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/para-release.jks"

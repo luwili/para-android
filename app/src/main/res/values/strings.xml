@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Пара</string>
+    <string name="widget_description">Расписание твоей группы. Подстраивается под размер, показывает текущую пару и работает офлайн.</string>
+</resources>

@@ -1,0 +1,43 @@
+{
+  "format": "para-schedule",
+  "version": 1,
+  "configured": true,
+  "demo": true,
+  "profile": {
+    "name": "Пример группы",
+    "timezone": "Asia/Yekaterinburg",
+    "semesterStart": "2026-09-07",
+    "semesterEnd": "2027-01-31",
+    "theme": "system",
+    "dynamicColors": false
+  },
+  "lessons": [
+    {
+      "id": "example-lecture",
+      "subject": "Линейная алгебра",
+      "start": "08:30",
+      "end": "10:00",
+      "room": "310",
+      "teacher": "",
+      "kind": "Лекция",
+      "dayOfWeek": 1,
+      "repeat": "EVERY",
+      "color": 0
+    },
+    {
+      "id": "example-practice",
+      "subject": "Информационные технологии",
+      "start": "10:15",
+      "end": "11:45",
+      "room": "402",
+      "teacher": "",
+      "kind": "Практика",
+      "dayOfWeek": 1,
+      "repeat": "ODD",
+      "color": 1
+    }
+  ],
+  "overrides": {
+    "2026-11-04": []
+  }
+}
