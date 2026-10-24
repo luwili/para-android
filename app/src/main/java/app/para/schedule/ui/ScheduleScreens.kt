@@ -34,13 +34,13 @@ fun ScheduleScreen(
 ) {
     val lessons = ScheduleEngine.lessonsOn(schedule, date)
     val week = monday(date)
-    LazyColumn(contentPadding = PaddingValues(start = 24.dp, end = 24.dp, top = 8.dp, bottom = 100.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
+    LazyColumn(contentPadding = PaddingValues(start = 24.dp, end = 24.dp, top = 8.dp, bottom = 100.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         item {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Column {
                     Text("УЧЁБА В ТВОЁМ РИТМЕ", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
                     Spacer(Modifier.height(10.dp))
-                    Text("Всё по плану.", style = MaterialTheme.typography.displaySmall)
+                    Text("Всё по плану.", style = MaterialTheme.typography.headlineLarge)
                 }
                 IconButton(onClick = { onDate(now.toLocalDate()) }, modifier = Modifier.clip(CircleShape).background(MaterialTheme.colorScheme.surface)) {
                     Icon(Icons.Outlined.Today, "Перейти к сегодня")
@@ -50,8 +50,8 @@ fun ScheduleScreen(
         item { DayHero(schedule, date, now, lessons) }
         if (schedule.demo) item {
             Surface(color = MaterialTheme.colorScheme.tertiaryContainer, shape = RoundedCornerShape(16.dp)) {
-                Text("Это пример, а не актуальное расписание группы. Свои данные можно внести в редакторе или начать с чистого листа в настройках.",
-                    style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(14.dp))
+                Text("Демо-расписание · не данные вуза. Начать своё можно в настройках.",
+                    style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(10.dp))
             }
         }
         item {
@@ -65,7 +65,7 @@ fun ScheduleScreen(
                 }
                 IconButton(onClick = { onDate(date.plusWeeks(1)) }) { Icon(Icons.Outlined.ChevronRight, "Следующая неделя") }
             }
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(8.dp))
             WeekStrip(schedule, week, date, now.toLocalDate(), onDate)
         }
         item {
@@ -91,9 +91,9 @@ private fun DayHero(schedule: Schedule, date: LocalDate, now: ZonedDateTime, les
     val current = lessons.firstOrNull { ScheduleEngine.isCurrent(it, date, now) }
     val next = if (today) lessons.firstOrNull { it.start > now.toLocalTime() } else null
     Surface(shape = RoundedCornerShape(28.dp), color = MaterialTheme.colorScheme.primaryContainer) {
-        Box(Modifier.fillMaxWidth().heightIn(min = 160.dp)) {
-            OrbitArt(Modifier.align(Alignment.CenterEnd).size(135.dp))
-            Column(Modifier.padding(23.dp).fillMaxWidth(.72f), verticalArrangement = Arrangement.spacedBy(9.dp)) {
+        Box(Modifier.fillMaxWidth().heightIn(min = 125.dp)) {
+            OrbitArt(Modifier.align(Alignment.CenterEnd).size(112.dp))
+            Column(Modifier.padding(18.dp).fillMaxWidth(.72f), verticalArrangement = Arrangement.spacedBy(7.dp)) {
                 Text(date.format(DateTimeFormatter.ofPattern("EEEE, d MMMM", russian)).replaceFirstChar { it.titlecase(russian) },
                     style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onPrimaryContainer)
                 Text(when {
@@ -126,8 +126,8 @@ private fun WeekStrip(schedule: Schedule, week: LocalDate, selected: LocalDate, 
             val foreground = if (active) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
             Column(Modifier.weight(1f).clip(RoundedCornerShape(18.dp))
                 .background(if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface)
-                .clickable { onDate(date) }.padding(vertical = 12.dp),
-                horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(7.dp)) {
+                .clickable { onDate(date) }.padding(vertical = 10.dp),
+                horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(5.dp)) {
                 Text(labels[index], style = MaterialTheme.typography.labelSmall, color = foreground.copy(alpha = .7f))
                 Text(date.dayOfMonth.toString(), fontWeight = FontWeight.SemiBold, fontSize = 18.sp, color = foreground)
                 Box(Modifier.size(4.dp).background(if (date == today || ScheduleEngine.lessonsOn(schedule, date).isNotEmpty()) foreground else androidx.compose.ui.graphics.Color.Transparent, CircleShape))

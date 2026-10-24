@@ -13,6 +13,16 @@ Android-тесты проверяют создание занятия через
 
 Инструментальные тесты заменяют локальные данные debug-приложения. Не запускайте их на рабочем расписании. PNG тестовых виджетов сохраняются в private `filesDir` debug-приложения и могут быть извлечены через `adb exec-out run-as app.para.schedule cat files/widget-260x120.png`.
 
+Gradle может удалить тестовое приложение после прогона. Чтобы оставить PNG для просмотра, можно установить тесты вручную на эмулятор:
+
+```bash
+./gradlew assembleDebug assembleDebugAndroidTest
+adb -e install -r app/build/outputs/apk/debug/app-debug.apk
+adb -e install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+adb -e shell am instrument -w app.para.schedule.test/androidx.test.runner.AndroidJUnitRunner
+adb -e exec-out run-as app.para.schedule cat files/widget-260x120.png > widget.png
+```
+
 ## Перед широким распространением
 
 - Физический Android 8–11: проверить сервис коллекции большого виджета.

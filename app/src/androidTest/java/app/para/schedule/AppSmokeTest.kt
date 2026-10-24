@@ -36,6 +36,8 @@ class AppSmokeTest {
         screenshot("welcome")
         compose.onNodeWithText("Сначала посмотреть пример").performScrollTo().performClick()
         compose.waitUntil(10_000) { ScheduleRepository.get(compose.activity).state.value.schedule.configured }
+        // Hide the transient message before visual snapshots.
+        compose.waitUntil(10_000) { compose.onAllNodesWithText("Открыт демонстрационный пример").fetchSemanticsNodes().isEmpty() }
         compose.onNodeWithText("Всё по плану.").assertIsDisplayed()
         screenshot("schedule-light")
         compose.onNodeWithText("Месяц", useUnmergedTree = true).performClick()
@@ -51,7 +53,7 @@ class AppSmokeTest {
 
     @Test fun createLessonThroughEditorPersistsIt() {
         load(Schedule(configured = true))
-        compose.onNodeWithText("Занятие", useUnmergedTree = true).performClick()
+        compose.onNodeWithContentDescription("Добавить занятие").performClick()
         compose.onNodeWithText("Предмет").performTextInput("Линейная алгебра")
         compose.onNodeWithText("Сохранить занятие").performScrollTo().performClick()
         compose.waitUntil(10_000) { ScheduleRepository.get(compose.activity).state.value.schedule.lessons.isNotEmpty() }

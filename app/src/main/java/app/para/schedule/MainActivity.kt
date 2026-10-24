@@ -89,8 +89,9 @@ fun ParaApp(initialDate: LocalDate? = null, model: ParaViewModel = viewModel()) 
             },
             floatingActionButton = {
                 if (state.ready && schedule.configured && pageName in listOf(Page.DAY.name, Page.MONTH.name)) {
-                    ExtendedFloatingActionButton(onClick = onAdd, icon = { Icon(Icons.Outlined.Add, null) }, text = { Text("Занятие") },
-                        containerColor = MaterialTheme.colorScheme.primary, contentColor = MaterialTheme.colorScheme.onPrimary)
+                    FloatingActionButton(onClick = onAdd, containerColor = MaterialTheme.colorScheme.primary, contentColor = MaterialTheme.colorScheme.onPrimary) {
+                        Icon(Icons.Outlined.Add, "Добавить занятие")
+                    }
                 }
             }) { padding ->
             Box(Modifier.fillMaxSize().padding(padding)) {

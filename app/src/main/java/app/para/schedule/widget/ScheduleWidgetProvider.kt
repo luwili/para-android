@@ -71,7 +71,7 @@ class ScheduleWidgetProvider : AppWidgetProvider() {
             val layout = when { tiny -> R.layout.widget_tiny; compact -> R.layout.widget_compact; columns -> R.layout.widget_columns; else -> R.layout.widget_full }
             val views = RemoteViews(context.packageName, layout)
             val title = if (!schedule.configured) "пара · твоя группа" else
-                "${if (schedule.demo) "ПРИМЕР · " else ""}${schedule.profile.name}${if (compact) "" else " · ${date.format(DateTimeFormatter.ofPattern("d MMM", russian))}"}"
+                "${if (schedule.demo) "ПРИМЕР · " else ""}${schedule.profile.name}${if (compact || tiny) "" else " · ${date.format(DateTimeFormatter.ofPattern("d MMM", russian))}"}"
             views.setTextViewText(R.id.widget_title, title)
             val capacity = when {
                 compact -> ((height - 60) / 43).coerceIn(1, 6)
@@ -99,25 +99,23 @@ class ScheduleWidgetProvider : AppWidgetProvider() {
             } else {
                 views.removeAllViews(R.id.widget_lessons)
                 visible.forEach { lesson ->
-                val active = ScheduleEngine.isCurrent(lesson, date, now)
-                val row = RemoteViews(context.packageName, when { compact -> R.layout.widget_compact_item; columns -> R.layout.widget_column_item; else -> R.layout.widget_full_item })
-                row.setInt(R.id.lesson_root, "setBackgroundResource", if (active) R.drawable.widget_item_active else R.drawable.widget_item_background)
-                val time = "${lesson.start.format(timeFormat)}–${lesson.end.format(timeFormat)}"
-                val abbr = ScheduleEngine.abbreviation(lesson.subject)
-                row.setTextViewText(R.id.lesson_subject, when { compact -> "${lesson.start.format(timeFormat)}  $abbr${if (active) " · СЕЙЧАС" else ""}"; columns -> abbr; else -> lesson.subject })
-                if (!compact) row.setTextViewText(R.id.lesson_time, "$time${if (active) " · СЕЙЧАС" else ""}")
-                row.setTextViewText(R.id.lesson_detail, if (compact || columns) ScheduleEngine.cleanRoom(lesson.room).ifBlank { lesson.kind }
-                    else listOf(lesson.room, lesson.teacher, lesson.kind).filter { it.isNotBlank() }.joinToString(" · "))
-                if (tiny) {
-                    row.setViewVisibility(R.id.lesson_detail, View.GONE)
-                    row.setViewPadding(R.id.lesson_root, 3, 0, 3, 0)
-                    row.setTextViewTextSize(R.id.lesson_subject, android.util.TypedValue.COMPLEX_UNIT_SP, 15f)
-                }
-                if (columns && !tiny) {
-                    val pad = (4 * context.resources.displayMetrics.density).toInt()
-                    row.setViewPadding(R.id.lesson_root, pad, 0, pad, 0)
-                }
-                views.addView(R.id.widget_lessons, row)
+                    val active = ScheduleEngine.isCurrent(lesson, date, now)
+                    val row = RemoteViews(context.packageName, if (compact) R.layout.widget_compact_item else R.layout.widget_column_item)
+                    row.setInt(R.id.lesson_root, "setBackgroundResource", if (active) R.drawable.widget_item_active else R.drawable.widget_item_background)
+                    val abbr = ScheduleEngine.abbreviation(lesson.subject)
+                    row.setTextViewText(R.id.lesson_subject, if (compact) "${lesson.start.format(timeFormat)}  $abbr${if (active) " · СЕЙЧАС" else ""}" else abbr)
+                    if (!compact) row.setTextViewText(R.id.lesson_time, if (tiny) lesson.start.format(timeFormat)
+                        else "${lesson.start.format(timeFormat)}\n–${lesson.end.format(timeFormat)}")
+                    row.setTextViewText(R.id.lesson_detail, ScheduleEngine.cleanRoom(lesson.room).ifBlank { lesson.kind })
+                    if (tiny) {
+                        row.setViewVisibility(R.id.lesson_detail, View.GONE)
+                        row.setViewPadding(R.id.lesson_root, 3, 0, 3, 0)
+                        row.setTextViewTextSize(R.id.lesson_subject, android.util.TypedValue.COMPLEX_UNIT_SP, 15f)
+                    } else if (columns) {
+                        val pad = (4 * context.resources.displayMetrics.density).toInt()
+                        row.setViewPadding(R.id.lesson_root, pad, 0, pad, 0)
+                    }
+                    views.addView(R.id.widget_lessons, row)
                 }
             }
             val empty = lessons.isEmpty()
@@ -130,6 +128,10 @@ class ScheduleWidgetProvider : AppWidgetProvider() {
             if (!compact && !columns) views.setTextViewText(R.id.widget_subtitle, "$dayLabel · $weekLabel")
             views.setTextViewText(R.id.widget_footer, if (lessons.size > visible.size) "Ещё ${lessons.size - visible.size} · все пары в приложении" else
                 if (compact) date.format(DateTimeFormatter.ofPattern("EEE, d MMM", russian)) else "$dayLabel · ${now.format(timeFormat)}")
+            if (columns && !tiny) lessons.firstOrNull { ScheduleEngine.isCurrent(it, date, now) }?.let {
+                val remainder = if (lessons.size > visible.size) "ещё ${lessons.size - visible.size}" else "до ${it.end.format(timeFormat)}"
+                views.setTextViewText(R.id.widget_footer, "СЕЙЧАС · ${ScheduleEngine.abbreviation(it.subject)} · $remainder")
+            }
             val open = Intent(context, MainActivity::class.java).putExtra(EXTRA_DATE, date.toString())
                 .setData(android.net.Uri.parse("para://day/$date"))
             views.setOnClickPendingIntent(R.id.widget_root, PendingIntent.getActivity(context, id, open, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE))
